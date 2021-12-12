@@ -9,8 +9,8 @@ def get_input():
                 fs_content.append(value)
             except TypeError:
                 continue
-    if len(fs_content) != 2000:
-        raise Exception("Failed to parse all of input")
+
+    print(f"Lines ingested: {len(fs_content)}") # Validate input file was read properly
     return fs_content
 
 if __name__ == "__main__":
