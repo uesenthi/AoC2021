@@ -2,13 +2,6 @@ import os
 import functools
 
 from libraries.helpers import get_input
-
-
-def parse_for_broken_syntax(syntax_string, open_symbol, index):
-    if syntax_string[0] in ('(', '[', '{', '<'):
-        end_idx, end_character = parse_for_broken_syntax(syntax_string[1:], syntax_string[0], index+1)
-    else:
-        return index, syntax_string[0]
     
 
 def get_solution(content):
