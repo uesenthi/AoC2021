@@ -7,13 +7,26 @@ from collections import defaultdict
 def get_coordinate_map(content):
     coordinate = {
         x: []
-        for x in range(len(content))
+        for x in range(len(content)*5)
     }
-
+    
     for idx, line in enumerate(content):
-        coordinate[idx] =  list(map(lambda x: int(x), list(line)))
+        for i in range(5):
+            row = list(map(lambda x: increment(int(x), i), list(line)))
+            coordinate[idx].extend(row)
+    
+    for y in range(len(content)):
+        for i in range(1,5):
+            row = list(map(lambda x: increment(int(x), i), coordinate[y]))
+            coordinate[y + len(content)*i].extend(row)
 
     return coordinate
+
+def increment(val, step):
+    sum = val + step
+    if sum >= 10:
+        sum = sum - 10 + 1
+    return sum
 
 def get_density_at_pos(content, y, x):
     if x < 0 or y < 0:
@@ -63,10 +76,10 @@ def get_solution(content):
 
 if __name__ == "__main__":
     test_solution = get_solution(get_input(path_to_file=os.getcwd() + "/input_test.txt"))
-    if test_solution == 40:
+    if test_solution == 315:
         print("TEST PASSED")
         print(get_solution(get_input(path_to_file=os.getcwd() + "/input.txt")))
-        print("622 is too high, i put 621 and it was the answer. I don' tknow why .....")
+        print(" 2918 was too high, ")
         
     else:
         print(test_solution)
