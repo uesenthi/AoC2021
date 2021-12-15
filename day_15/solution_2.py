@@ -37,6 +37,24 @@ def get_density_at_pos(content, y, x):
         # print("index errpr", y,x)
         return None
 
+def build_shortest_path_map(coordinate_map, shortest_path):
+    new_shortest_paths = shortest_path.copy()
+    for y in range(len(coordinate_map)):
+        for x in range(len(coordinate_map[0])):
+            current_position = str([y,x])
+            # All possible neighbors
+            possible_neighors = [
+                [y-1,x],
+                [y,x-1],
+                [y+1,x],
+                [y,x+1],
+            ]
+            actual_neighbors = list(filter(lambda neighbor: isinstance(get_density_at_pos(coordinate_map, neighbor[0], neighbor[1]), int), possible_neighors))
+
+            for neighbor in actual_neighbors:
+                density_to_neighber = get_density_at_pos(coordinate_map, neighbor[0], neighbor[1])
+                new_shortest_paths[str(neighbor)] = min(new_shortest_paths.get(str(neighbor), math.inf), new_shortest_paths[current_position] + density_to_neighber)
+    return new_shortest_paths
 
 def get_solution(content):
     # STarting position is never "entered", so don't count it
@@ -44,33 +62,27 @@ def get_solution(content):
     start_position = [0,0]
     end_position = [len(coordinate_map[0])-1, len(coordinate_map) - 1]
 
-    # Weight of 0 from the start
-    shortest_path = {
-        str(start_position): 0
-    }
+    shortest_path = build_shortest_path_map(
+        coordinate_map,
+        {str(start_position): 0}
+    )
 
-    # Do this x times, so that all the risk values "stabilize"
-    for a in range(5):
-        for y in range(len(coordinate_map)):
-            for x in range(len(coordinate_map[0])):
-                current_position = str([y,x])
-                # All possible neighbors
-                possible_neighors = [
-                    [y-1,x],
-                    [y,x-1],
-                    [y+1,x],
-                    [y,x+1],
-                ]
-                actual_neighbors = list(filter(lambda neighbor: isinstance(get_density_at_pos(coordinate_map, neighbor[0], neighbor[1]), int), possible_neighors))
-
-                for neighbor in actual_neighbors:
-                    density_to_neighber = get_density_at_pos(coordinate_map, neighbor[0], neighbor[1])
-                    shortest_path[str(neighbor)] = min(shortest_path.get(str(neighbor), math.inf), shortest_path[current_position] + density_to_neighber)
-                
+    initial_path_to_end = shortest_path[str(end_position)]
+    while True:
+        shortest_path = build_shortest_path_map(
+            coordinate_map,
+            shortest_path
+        )
+        new_path_to_end = shortest_path[str(end_position)]
+        if new_path_to_end != initial_path_to_end:
+            initial_path_to_end = new_path_to_end
+            continue
+        else:
+            break
         
-    path = shortest_path[str(end_position)]
 
-    return path    
+
+    return initial_path_to_end    
 
 
 if __name__ == "__main__":
