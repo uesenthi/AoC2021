@@ -29,9 +29,6 @@ def increment(val, step):
     return sum
 
 def get_density_at_pos(content, y, x):
-    if x < 0 or y < 0:
-        # print("less than 0 errpr", y,x)
-        return None
     try:
         val = content[y][x]
         return val
@@ -52,23 +49,25 @@ def get_solution(content):
         str(start_position): 0
     }
 
-    for y in range(len(coordinate_map)):
-        for x in range(len(coordinate_map[0])):
-            # All possible neighbors
-            possible_neighors = [
-                [y - 1, x],
-                [y + 1, x],
-                [y, x - 1],
-                [y, x + 1],
-            ]
-            actual_neighbors = list(filter(lambda neighbor: get_density_at_pos(coordinate_map, neighbor[0], neighbor[1]) is not None, possible_neighors))
+    # Do this x times, so that all the risk values "stabilize"
+    for a in range(5):
+        for y in range(len(coordinate_map)):
+            for x in range(len(coordinate_map[0])):
+                current_position = str([y,x])
+                # All possible neighbors
+                possible_neighors = [
+                    [y-1,x],
+                    [y,x-1],
+                    [y+1,x],
+                    [y,x+1],
+                ]
+                actual_neighbors = list(filter(lambda neighbor: isinstance(get_density_at_pos(coordinate_map, neighbor[0], neighbor[1]), int), possible_neighors))
 
-            for neighbor in actual_neighbors:
-                density_to_neighber = get_density_at_pos(coordinate_map, neighbor[0], neighbor[1])
-                shortest_path.update({
-                    str(neighbor): min(shortest_path.get(str(neighbor),math.inf), shortest_path[str([y,x])] + density_to_neighber)
-                })
-
+                for neighbor in actual_neighbors:
+                    density_to_neighber = get_density_at_pos(coordinate_map, neighbor[0], neighbor[1])
+                    shortest_path[str(neighbor)] = min(shortest_path.get(str(neighbor), math.inf), shortest_path[current_position] + density_to_neighber)
+                
+        
     path = shortest_path[str(end_position)]
 
     return path    
@@ -79,7 +78,6 @@ if __name__ == "__main__":
     if test_solution == 315:
         print("TEST PASSED")
         print(get_solution(get_input(path_to_file=os.getcwd() + "/input.txt")))
-        print(" 2918 was too high, ")
         
     else:
         print(test_solution)
