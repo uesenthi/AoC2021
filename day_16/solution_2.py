@@ -1,5 +1,6 @@
 import math
 import os
+import functools
 
 from libraries.helpers import get_input
 
@@ -10,6 +11,10 @@ def convert_to_value(bin_string):
         bit_flag = bin_string[len(bin_string)-1-idx]
         sum += (math.pow(2, idx))*int(bit_flag)
     return int(sum)
+
+def convert_to_binary(value):
+    return bin(value)[2:]
+
 
 def parse_literal(bin_string):
     packet = list(bin_string)
@@ -62,22 +67,31 @@ def parse_bin_string(bin_string):
     if convert_to_value(type) == 0:
         # sum packets
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        return version + agg_version, parsed_packets, remaining_bin_string
+        aggregate_sum = functools.reduce(lambda x, y: convert_to_binary(convert_to_value(x) + convert_to_value(y)), parsed_packets)
+        
+
+        return version + agg_version, aggregate_sum, remaining_bin_string
 
     elif convert_to_value(type) == 1:
         # product packets
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        return version + agg_version, parsed_packets, remaining_bin_string
+        aggregate_product = functools.reduce(lambda x, y: convert_to_binary(convert_to_value(x) * convert_to_value(y)), parsed_packets)
+
+        return version + agg_version, aggregate_product, remaining_bin_string
 
     elif convert_to_value(type) == 2:
         # min packets
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        return version + agg_version, parsed_packets, remaining_bin_string
+        aggregate_min = min(list(map(lambda x: convert_to_value(x), parsed_packets)))
+
+        return version + agg_version, convert_to_binary(aggregate_min), remaining_bin_string
 
     elif convert_to_value(type) == 3:
         # max packets
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        return version + agg_version, parsed_packets, remaining_bin_string
+        aggregate_max = max(list(map(lambda x: convert_to_value(x), parsed_packets)))
+
+        return version + agg_version, convert_to_binary(aggregate_max), remaining_bin_string
 
     elif convert_to_value(type) == 4:
         packet_bin_string, packet = parse_literal(bin_string[6:])
@@ -86,17 +100,24 @@ def parse_bin_string(bin_string):
     elif convert_to_value(type) == 5:
         # greater than packets
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        return version + agg_version, parsed_packets, remaining_bin_string
+        agg_greater = 1 if convert_to_value(parsed_packets[0]) > convert_to_value(parsed_packets[1]) else 0
+        
+        return version + agg_version, convert_to_binary(agg_greater), remaining_bin_string
 
     elif convert_to_value(type) == 6:
         # less than packets
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        return version + agg_version, parsed_packets, remaining_bin_string
+        agg_lesser = 1 if convert_to_value(parsed_packets[0]) < convert_to_value(parsed_packets[1]) else 0
+        
+
+        return version + agg_version, convert_to_binary(agg_lesser), remaining_bin_string
 
     elif convert_to_value(type) == 7:
         # equal packets
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        return version + agg_version, parsed_packets, remaining_bin_string
+        agg_equal = 1 if parsed_packets[0] == parsed_packets[1] else 0
+
+        return version + agg_version, convert_to_binary(agg_equal), remaining_bin_string
 
 
 def get_solution(content):
@@ -124,14 +145,14 @@ def get_solution(content):
     for char in BITS_transmission:
         bin_string += hex_map[char]
 
-    version, *args = parse_bin_string(bin_string)
+    version, agg_value, *args = parse_bin_string(bin_string)
 
-    return version
+    return convert_to_value(agg_value)
 
 
 if __name__ == "__main__":
     test_solution = get_solution(get_input(path_to_file=os.getcwd() + "/input_test.txt"))
-    if test_solution == 31:
+    if test_solution == 1:
         print("TEST PASSED")
         print(get_solution(get_input(path_to_file=os.getcwd() + "/input.txt")))
         
