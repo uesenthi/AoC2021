@@ -64,60 +64,30 @@ def parse_bin_string(bin_string):
     version = convert_to_value(bin_string[:3])
     type = bin_string[3:6]
 
-    if convert_to_value(type) == 0:
-        # sum packets
-        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        aggregate_sum = functools.reduce(lambda x, y: convert_to_binary(convert_to_value(x) + convert_to_value(y)), parsed_packets)
-        
 
-        return version + agg_version, aggregate_sum, remaining_bin_string
-
-    elif convert_to_value(type) == 1:
-        # product packets
-        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        aggregate_product = functools.reduce(lambda x, y: convert_to_binary(convert_to_value(x) * convert_to_value(y)), parsed_packets)
-
-        return version + agg_version, aggregate_product, remaining_bin_string
-
-    elif convert_to_value(type) == 2:
-        # min packets
-        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        aggregate_min = min(list(map(lambda x: convert_to_value(x), parsed_packets)))
-
-        return version + agg_version, convert_to_binary(aggregate_min), remaining_bin_string
-
-    elif convert_to_value(type) == 3:
-        # max packets
-        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        aggregate_max = max(list(map(lambda x: convert_to_value(x), parsed_packets)))
-
-        return version + agg_version, convert_to_binary(aggregate_max), remaining_bin_string
-
-    elif convert_to_value(type) == 4:
+    if convert_to_value(type) == 4:
         packet_bin_string, packet = parse_literal(bin_string[6:])
         return version, packet_bin_string, packet
-
-    elif convert_to_value(type) == 5:
-        # greater than packets
+    
+    else:
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        agg_greater = 1 if convert_to_value(parsed_packets[0]) > convert_to_value(parsed_packets[1]) else 0
+        aggregate = 0
+        if convert_to_value(type) == 0:
+            aggregate = functools.reduce(lambda x, y: convert_to_binary(convert_to_value(x) + convert_to_value(y)), parsed_packets)
+        elif convert_to_value(type) == 1:
+            aggregate = functools.reduce(lambda x, y: convert_to_binary(convert_to_value(x) * convert_to_value(y)), parsed_packets)
+        elif convert_to_value(type) == 2:
+            aggregate = convert_to_binary(min(list(map(lambda x: convert_to_value(x), parsed_packets))))
+        elif convert_to_value(type) == 3:
+            aggregate = convert_to_binary(max(list(map(lambda x: convert_to_value(x), parsed_packets))))
+        elif convert_to_value(type) == 5:
+            aggregate = convert_to_binary(1 if convert_to_value(parsed_packets[0]) > convert_to_value(parsed_packets[1]) else 0)
+        elif convert_to_value(type) == 6:
+            aggregate = convert_to_binary(1 if convert_to_value(parsed_packets[0]) < convert_to_value(parsed_packets[1]) else 0)
+        else:
+            aggregate = convert_to_binary(1 if parsed_packets[0] == parsed_packets[1] else 0)
         
-        return version + agg_version, convert_to_binary(agg_greater), remaining_bin_string
-
-    elif convert_to_value(type) == 6:
-        # less than packets
-        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        agg_lesser = 1 if convert_to_value(parsed_packets[0]) < convert_to_value(parsed_packets[1]) else 0
-        
-
-        return version + agg_version, convert_to_binary(agg_lesser), remaining_bin_string
-
-    elif convert_to_value(type) == 7:
-        # equal packets
-        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
-        agg_equal = 1 if parsed_packets[0] == parsed_packets[1] else 0
-
-        return version + agg_version, convert_to_binary(agg_equal), remaining_bin_string
+        return version + agg_version, aggregate, remaining_bin_string
 
 
 def get_solution(content):
@@ -154,7 +124,9 @@ if __name__ == "__main__":
     test_solution = get_solution(get_input(path_to_file=os.getcwd() + "/input_test.txt"))
     if test_solution == 1:
         print("TEST PASSED")
-        print(get_solution(get_input(path_to_file=os.getcwd() + "/input.txt")))
+        answer = 1673210814091
+        if get_solution(get_input(path_to_file=os.getcwd() + "/input.txt")) == answer:
+            print("Still works")
         
     else:
         print(test_solution)
