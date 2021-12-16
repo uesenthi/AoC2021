@@ -53,20 +53,48 @@ def parse_operator(bin_string):
                 parsed_packets.append(packet_bin_string)
                 agg_subpacket_version += subpacket_version
         return agg_subpacket_version, parsed_packets, packets
-        
-    
+
 
 def parse_bin_string(bin_string):
     version = convert_to_value(bin_string[:3])
     type = bin_string[3:6]
 
+    if convert_to_value(type) == 0:
+        # sum packets
+        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
+        return version + agg_version, parsed_packets, remaining_bin_string
 
-    if convert_to_value(type) == 4:
+    elif convert_to_value(type) == 1:
+        # product packets
+        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
+        return version + agg_version, parsed_packets, remaining_bin_string
+
+    elif convert_to_value(type) == 2:
+        # min packets
+        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
+        return version + agg_version, parsed_packets, remaining_bin_string
+
+    elif convert_to_value(type) == 3:
+        # max packets
+        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
+        return version + agg_version, parsed_packets, remaining_bin_string
+
+    elif convert_to_value(type) == 4:
         packet_bin_string, packet = parse_literal(bin_string[6:])
         return version, packet_bin_string, packet
-        
-    else:
 
+    elif convert_to_value(type) == 5:
+        # greater than packets
+        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
+        return version + agg_version, parsed_packets, remaining_bin_string
+
+    elif convert_to_value(type) == 6:
+        # less than packets
+        agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
+        return version + agg_version, parsed_packets, remaining_bin_string
+
+    elif convert_to_value(type) == 7:
+        # equal packets
         agg_version, parsed_packets, remaining_bin_string = parse_operator(bin_string[6:])
         return version + agg_version, parsed_packets, remaining_bin_string
 
